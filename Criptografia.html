@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enigma machine</title>
+</head>
+<body>
+
+<h2>Enigma machine</h2>
+
+<textarea id="inputText" rows="4" cols="50"></textarea><br>
+<button onclick="criptografar()">Encrypt</button>
+<button onclick="descriptografar()">decrypt</button><br>
+<p id="resultado"></p>
+
+<script>
+function criptografar() {
+    var texto = document.getElementById("inputText").value.toLowerCase();
+    var resultado = "";
+
+    // Matriz de criptografia
+    var matrizA = [[1, 2, 1], [-1, -1, 0], [1, 0, 0]];
+
+    // Função para multiplicar a matriz por um vetor
+    function matrizMultiplicacao(matriz, vetor) {
+        var resultado = [];
+        for (var i = 0; i < matriz.length; i++) {
+            var temp = 0;
+            for (var j = 0; j < matriz[i].length; j++) {
+                temp += matriz[i][j] * vetor[j];
+            }
+            resultado.push(temp);
+        }
+        return resultado;
+    }
+
+    for (var i = 0; i < texto.length; i += 3) {
+        var conjunto = texto.slice(i, i + 3);
+        // Substitui espaços por 0
+        conjunto = conjunto.replace(/ /g, '0');
+        // Transforma o conjunto em um vetor de números representando as letras do alfabeto
+        var vetor = [conjunto.charCodeAt(0) - 96, conjunto.charCodeAt(1) - 96, conjunto.charCodeAt(2) - 96];
+        // Preenche com zero se o vetor tiver menos de três elementos
+        while (vetor.length < 3) {
+            vetor.push(0);
+        }
+        // Substitui NaN por 0
+        vetor = vetor.map(function(num) {
+            return isNaN(num) ? 0 : num;
+        });
+        // Multiplica o vetor pela matriz de criptografia
+        var criptografado = matrizMultiplicacao(matrizA, vetor);
+        // Monta a string resultante com os valores criptografados
+        resultado += "[" + criptografado.join(" ") + "] ";
+    }
+
+    document.getElementById("resultado").innerText = resultado;
+}
+
+function descriptografar() {
+    var texto = document.getElementById("inputText").value;
+    var resultado = "";
+
+    // Matriz inversa da matriz de criptografia
+    var matrizA_inversa = [[0, 0, 1], [0, -1, -1], [1, 2, 1]];
+
+    // Função para multiplicar a matriz inversa por um vetor
+    function matrizMultiplicacao(matriz, vetor) {
+        var resultado = [];
+        for (var i = 0; i < matriz.length; i++) {
+            var temp = 0;
+            for (var j = 0; j < matriz[i].length; j++) {
+                temp += matriz[i][j] * vetor[j];
+            }
+            resultado.push(temp);
+        }
+        return resultado;
+    }
+
+    // Divida o texto em conjuntos de números
+    var conjuntos = texto.match(/\[\s*([^[\]]+?)\s*\]/g);
+    if (conjuntos) {
+        conjuntos.forEach(function(conjunto) {
+            // Remove colchetes e divide os números
+            var numeros = conjunto.replace(/[\[\]]/g, '').split(' ');
+            // Converte os números em vetor
+            var vetor = numeros.map(function(num) {
+                return parseInt(num);
+            });
+            // Multiplica o vetor pela matriz inversa
+            var descriptografado = matrizMultiplicacao(matrizA_inversa, vetor);
+            // Monta a string resultante com os valores descriptografados
+            resultado += String.fromCharCode(descriptografado[0] + 96) +
+                         String.fromCharCode(descriptografado[1] + 96) +
+                         String.fromCharCode(descriptografado[2] + 96);
+        });
+    }
+
+    document.getElementById("resultado").innerText = resultado;
+}
+</script>
+
+</body>
+</html>
